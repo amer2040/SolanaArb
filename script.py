@@ -15,7 +15,7 @@ from usdc_swaps import route_map
 
 # This is a script to perform arbitrage on the solana network using python
 
-solana_client = AsyncClient('https://api.mainnet-beta.solana.com')
+solana_client = AsyncClient('https://ssc-dao.genesysgo.net/')
 
 # Fetch your wallet using the secret key
 wallet = Keypair.from_secret_key(based58.b58decode('xxx'.encode("ascii")))
@@ -134,15 +134,15 @@ async def swap(input, generatedRouteMap):
                 tokenToUsdc = await get_coin_quote(
                     token,
                     'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-                    usdcToToken.get('data')[0].get('outAmountWithSlippage')
+                    usdcToToken.get('data')[0].get('otherAmountThreshold')
                 )
 
                 if tokenToUsdc.get('data'):
-                    if tokenToUsdc.get('data')[0].get('outAmountWithSlippage') > input:
-                        print("=========> Bingo:", token, " || ", tokenToUsdc.get('data')[0].get('outAmountWithSlippage') / 1000000)
+                    if tokenToUsdc.get('data')[0].get('otherAmountThreshold') > input:
+                        print("=========> Bingo:", token, " || ", tokenToUsdc.get('data')[0].get('otherAmountThreshold') / 1000000)
                         ata_created = await _create_associated_token_account(token)
                         await serialized_swap_transaction(usdcToToken.get('data')[0], tokenToUsdc.get('data')[0])
-                        profit = tokenToUsdc.get('data')[0].get('outAmountWithSlippage') - input
+                        profit = tokenToUsdc.get('data')[0].get('otherAmountThreshold') - input
                         print("Approx Profit made: ", profit / 1000000)
     
 
