@@ -62,7 +62,7 @@ async def get_coin_swap_quote(route):
 
 async def execute_trancation(transacx):
     # Execute transactions
-    opts = TxOpts(skip_preflight=True)
+    opts = TxOpts(skip_preflight=True , max_retries=11)
     for tx_name, raw_transaction in transacx.items():
         if raw_transaction:
             try:
@@ -98,7 +98,7 @@ async def _create_associated_token_account(token):
         wallet.public_key,
         PublicKey(token)
     )
-    opts = TxOpts(skip_preflight=True)
+    opts = TxOpts(skip_preflight=True , max_retries=11)
     ata = await solana_client.get_account_info(PublicKey(token_associated_account))
     if not ata.get('result').get('value'):
         try:
@@ -124,7 +124,7 @@ async def swap(input, generatedRouteMap):
     while True:
         print('**********************************************************')
         print('\n\n')
-        for token in generatedRouteMap[:150]:
+        for token in generatedRouteMap[:35]:
             usdcToToken = await get_coin_quote(
                 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
                 token,
