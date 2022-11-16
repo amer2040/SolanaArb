@@ -15,7 +15,7 @@ from usdc_swaps import route_map
 
 # This is a script to perform arbitrage on the solana network using python
 
-solana_client = AsyncClient('https://ssc-dao.genesysgo.net/')
+solana_client = AsyncClient('https://rpc.ankr.com/solana')
 
 # Fetch your wallet using the secret key
 wallet = Keypair.from_secret_key(based58.b58decode('xxx'.encode("ascii")))
@@ -40,7 +40,7 @@ def get_route_map():
 
 async def get_coin_quote (INPUT_MINT, TOKEN_MINT, amount):
     # Get PAIR QUOTE
-    url = f'https://quote-api.jup.ag/v1/quote?inputMint={INPUT_MINT}&outputMint={TOKEN_MINT}&amount={amount}&slippage=0.5'
+    url = f'https://quote-api.jup.ag/v3/quote?inputMint={INPUT_MINT}&outputMint={TOKEN_MINT}&amount={amount}&slippageBps=50'
     async with httpx.AsyncClient() as client:
         r = await client.get(url, timeout=15.0)
         return r.json()
@@ -49,7 +49,7 @@ async def get_coin_swap_quote(route):
     # Get PAIR SWAP QUOTE
     async with httpx.AsyncClient() as client:
        r = await client.post(
-           url='https://quote-api.jup.ag/v1/swap',
+           url='https://quote-api.jup.ag/v3/swap',
            json={
                 'route': route,
                 'userPublicKey': str(wallet.public_key),
@@ -138,15 +138,15 @@ async def swap(input, generatedRouteMap):
                 )
 
                 if tokenToUsdc.get('data'):
-                    if tokenToUsdc.get('data')[0].get('otherAmountThreshold') > input:
+                    if int(tokenToUsdc.get('data')[0].get('otherAmountThreshold')) > input:
                         print("=========> Bingo:", token, " || ", tokenToUsdc.get('data')[0].get('otherAmountThreshold') / 1000000)
                         ata_created = await _create_associated_token_account(token)
                         await serialized_swap_transaction(usdcToToken.get('data')[0], tokenToUsdc.get('data')[0])
-                        profit = tokenToUsdc.get('data')[0].get('otherAmountThreshold') - input
+                        profit = int(tokenToUsdc.get('data')[0].get('otherAmountThreshold')) - input
                         print("Approx Profit made: ", profit / 1000000)
     
 
 if __name__ == '__main__':
     generatedRouteMap = get_route_map()
-    # Swap 5 USDC
-    asyncio.run(swap(5000000, generatedRouteMap))
+    # Swap 10 USDC
+    asyncio.run(swap(10000000, generatedRouteMap))
